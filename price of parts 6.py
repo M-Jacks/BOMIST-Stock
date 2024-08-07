@@ -11,15 +11,20 @@ load_dotenv()
 bomist_api_url = os.getenv("BOMIST_API_URL")
 mouser_api_key = os.getenv("MOUSER_API_KEY")
 mouser_api_url = os.getenv("MOUSER_API_URL")
-batch_size = 5
-
 path = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
+sheet_name = os.getenv("SHEET_NAME")
+worksheet_title = os.getenv("WORKSHEET_TITLE")
+batch_size = 5 
+
 
 # Authentication
-gc = pygsheets.authorize(service_account_file=path)
-sheetname = "sheetsdemo"
-sh = gc.open(sheetname)
-sheet = sh.worksheet_by_title('Sheet9')
+try:
+    gc = pygsheets.authorize(service_account_file=path)
+except Exception as e:
+    print(f"Error authenticating with Google Sheets: {e}")
+    exit()
+sh = gc.open(sheet_name)
+sheet = sh.worksheet_by_title(worksheet_title)
 
 # Get the best quote from Mouser
 def get_best_quote(part_number, inventory):
