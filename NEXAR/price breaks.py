@@ -71,18 +71,29 @@ if __name__ == '__main__':
             if parts:
                 for item in parts:
                     part = item.get('part', {})
+                    mouser_or_lcsc_found = False  # Initialize flag to track presence of Mouser or LCSC
+                    
                     if part.get('sellers'):
                         for seller in part['sellers']:
                             company_name = seller.get('company', {}).get('name', 'N/A')
-                            print(f'Company: {company_name}')
-                            if seller.get('offers'):
-                                for offer in seller['offers']:
-                                    if offer.get('prices'):
-                                        for price_info in offer['prices']:
-                                            quantity = price_info.get('quantity', 'N/A')
-                                            price = price_info.get('price', 'N/A')
-                                            print(f'  Quantity: {quantity}, Price: {price}')
+                            
+                            # Filter for Mouser and LCSC only
+                            if company_name in ['Mouser', 'LCSC']:
+                                mouser_or_lcsc_found = True  # Mark that at least one of them is found
+                                print(f'Company: {company_name}')
+                                
+                                if seller.get('offers'):
+                                    for offer in seller['offers']:
+                                        if offer.get('prices'):
+                                            for price_info in offer['prices']:
+                                                quantity = price_info.get('quantity', 'N/A')
+                                                price = price_info.get('price', 'N/A')
+                                                print(f'  Quantity: {quantity}, Price: {price}')
                                     print()
+                    
+                    # If neither Mouser nor LCSC is found...
+                    if not mouser_or_lcsc_found:
+                        print("Part not available on Mouser or LCSC.")
             else:
                 print('No parts found for this query.')
         else:
