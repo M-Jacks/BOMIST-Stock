@@ -1,10 +1,9 @@
 import os
 from dotenv import load_dotenv
-from nexarClient import NexarClient  # Import the NexarClient class
+from nexarClient import NexarClient  
 
 load_dotenv()
 
-# Load Nexar credentials from environment variables
 client_id = os.getenv("NEXAR_CLIENT_ID")
 client_secret = os.getenv("NEXAR_CLIENT_SECRET")
 
@@ -12,7 +11,7 @@ client_secret = os.getenv("NEXAR_CLIENT_SECRET")
 QUERY_PRICING_BY_VOLUME = '''
 query pricingByVolumeLevels {
   supSearchMpn(
-    q: "0805W8F3600T5E",
+    q: "0603B103K500NT",
     limit: 1) {
     hits
     results {
@@ -36,7 +35,6 @@ query pricingByVolumeLevels {
 
 if __name__ == '__main__':
     try:
-        # Initialize NexarClient 
         nexar_client = NexarClient(client_id, client_secret)
         
         # Run the GraphQL query
@@ -54,19 +52,19 @@ if __name__ == '__main__':
                         for seller in part['sellers']:
                             company_name = seller.get('company', {}).get('name', 'N/A')
                             
-                            # Filter for Mouser and LCSC only
-                            if company_name in ['Mouser', 'LCSC']:
-                                mouser_or_lcsc_found = True  # Mark that at least one of them is found
-                                print(f'Company: {company_name}')
-                                
-                                if seller.get('offers'):
-                                    for offer in seller['offers']:
-                                        if offer.get('prices'):
-                                            for price_info in offer['prices']:
-                                                quantity = price_info.get('quantity', 'N/A')
-                                                price = price_info.get('price', 'N/A')
-                                                print(f'  Quantity: {quantity}, Price: {price}')
-                                    print()
+                        # Filter for Mouser and LCSC only
+                        # if company_name in ['Mouser', 'LCSC']:
+                            mouser_or_lcsc_found = True  # Mark that at least one of them is found
+                            print(f'Company: {company_name}')
+                            
+                            if seller.get('offers'):
+                                for offer in seller['offers']:
+                                    if offer.get('prices'):
+                                        for price_info in offer['prices']:
+                                            quantity = price_info.get('quantity', 'N/A')
+                                            price = price_info.get('price', 'N/A')
+                                            print(f'  Quantity: {quantity}, Price: {price}')
+                                print()
                     
                     # If neither Mouser nor LCSC is found...
                     if not mouser_or_lcsc_found:
