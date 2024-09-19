@@ -1,13 +1,10 @@
 import os
-import requests
 from dotenv import load_dotenv
+from nexarClient import NexarClient  # Import the NexarClient class
 
 load_dotenv()
 
-# Nexar API URL and the OAuth URL for getting the token
-NEXAR_API_URL = os.getenv("NEXAR_API_URL")
-OAUTH_URL = os.getenv("OAUTH_URL")
-
+# Load Nexar credentials from environment variables
 client_id = os.getenv("NEXAR_CLIENT_ID")
 client_secret = os.getenv("NEXAR_CLIENT_SECRET")
 
@@ -15,7 +12,7 @@ client_secret = os.getenv("NEXAR_CLIENT_SECRET")
 QUERY_PRICING_BY_VOLUME = '''
 query pricingByVolumeLevels {
   supSearchMpn(
-    q: "APM32F103RBT6",
+    q: "0805W8F3600T5E",
     limit: 1) {
     hits
     results {
@@ -37,37 +34,17 @@ query pricingByVolumeLevels {
 }
 '''
 
-# Authenticate and get the OAuth token
-def get_access_token():
-    payload = {
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'grant_type': 'client_credentials',
-        'scope': 'supply.domain'
-    }
-
-    response = requests.post(OAUTH_URL, data=payload)
-    response.raise_for_status()
-    return response.json().get('access_token')
-
-# Run the GraphQL query
-def run_query(query):
-    token = get_access_token()
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.post(NEXAR_API_URL, json={'query': query}, headers=headers)
-    response.raise_for_status()
-    return response.json()
-
 if __name__ == '__main__':
     try:
-        results = run_query(QUERY_PRICING_BY_VOLUME)
+        # Initialize NexarClient 
+        nexar_client = NexarClient(client_id, client_secret)
+        
+        # Run the GraphQL query
+        variables = {}  # no variables are needed for this query
+        results = nexar_client.get_query(QUERY_PRICING_BY_VOLUME, variables)
         
         if results:
-            parts = results.get('data', {}).get('supSearchMpn', {}).get('results', [])
+            parts = results.get('supSearchMpn', {}).get('results', [])
             if parts:
                 for item in parts:
                     part = item.get('part', {})
@@ -98,5 +75,5 @@ if __name__ == '__main__':
                 print('No parts found for this query.')
         else:
             print('No results returned from the query.')
-    except requests.RequestException as e:
+    except Exception as e:
         print(f'An error occurred: {e}')
